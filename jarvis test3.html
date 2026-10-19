@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06111c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JARVIS">
+<link rel="manifest" href="manifest.json">
+<title>J.A.R.V.I.S. Ultimate Edition</title>
+<style>
+:root{color-scheme:dark;--bg:#06111c;--panel:#081b2b;--cyan:#4bdcff;--muted:#75aabd;--line:#15506c}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 15%,#0b2940 0,#06111c 52%,#02070c 100%);color:#d5faff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+main{max-width:760px;margin:auto;padding:env(safe-area-inset-top) 15px calc(18px + env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:center;padding:20px 2px 14px;font:700 13px ui-monospace,monospace;letter-spacing:1.2px;color:var(--cyan)}
+.status{font-size:10px;color:#78c8dc}
+.panel{border:1px solid var(--line);background:rgba(5,24,38,.86);border-radius:15px;padding:15px;margin-bottom:12px;box-shadow:0 0 22px #00bfff0a}
+.corewrap{display:grid;place-items:center;padding:10px 0 4px}
+.core{width:min(56vw,230px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;background:radial-gradient(circle,#0c3c56 0,#061b2a 48%,transparent 70%);border:1px solid #1c7b9b;box-shadow:0 0 35px #00cfff25,inset 0 0 24px #00bfff20}
+.core:before,.core:after{content:"";position:absolute;inset:9%;border-radius:50%;border:2px solid transparent;border-top-color:var(--cyan);border-bottom-color:#1683ad;animation:spin 7s linear infinite}
+.core:after{inset:20%;border:1px dashed #58dfff;animation-direction:reverse;animation-duration:12s}
+.core.active:before{animation-duration: 1s;border-top-color:#ff4bf4;border-bottom-color:#ff00b3}
+.core span{font:700 14px ui-monospace,monospace;letter-spacing:2px;color:#c7f8ff;text-shadow:0 0 12px #29cfff}
+@keyframes spin{to{transform:rotate(360deg)}}
+h2{font:700 12px ui-monospace,monospace;letter-spacing:1.3px;color:var(--cyan);margin:0 0 12px}
+small,.hint{color:var(--muted);font-size:12px;line-height:1.45}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.metric{border:1px solid #123e54;background:#04121d;padding:10px;border-radius:9px;text-align:center}
+.metric b{display:block;color:#c7f8ff;font:600 15px ui-monospace,monospace;margin-bottom:4px}
+.metric span{font-size:10px;color:var(--muted)}
+#chat{height:260px;overflow:auto;white-space:pre-wrap;line-height:1.45;font-size:14px;padding:4px}
+.msg{margin:0 0 13px}.who{color:var(--cyan);font:700 11px ui-monospace,monospace;display:block;margin-bottom:3px}
+.controls{display:flex;gap:8px;margin-top:12px}
+input[type="text"]{min-width:0;flex:1;background:#020c14;border:1px solid #1b6685;border-radius:10px;color:#e1fbff;padding:13px;font-size:16px}
+input[type="range"]{width:100%;accent-color:var(--cyan);cursor:pointer}
+button{border:1px solid #2ab6dc;background:#0a3550;color:#e0fbff;border-radius:10px;padding:12px 14px;font-weight:700;font-size:13px}
+button:active{background:#126083}button:disabled{opacity:.5}
+.quick{display:flex;gap:8px;flex-wrap:wrap}.quick button{font-size:11px;padding:9px}
+footer{text-align:center;color:#4d8093;font-size:10px;padding:8px}
+</style>
+</head>
+<body>
+<main>
+<header><span>J.A.R.V.I.S. / ULTIMATE</span><span class="status" id="status">● STANDBY</span></header>
+<section class="panel">
+  <div class="corewrap"><div class="core" id="coreNode"><span>J.A.R.V.I.S.</span></div></div>
+  <p style="text-align:center;margin:10px 0 2px;font:12px ui-monospace,monospace;color:var(--cyan)" id="clock">--:--:--</p>
+  <p class="hint" style="text-align:center;margin:0">ADVANCED NEURAL SYNTHESIS MATRIX</p>
+</section>
+<section class="panel">
+<h2>SYSTEM TELEMETRY & AUDIO</h2>
+<div class="metrics" style="margin-bottom:12px">
+<div class="metric"><b id="battery">--</b><span>BATTERY</span></div>
+<div class="metric"><b id="network">ONLINE</b><span>NETWORK</span></div>
+<div class="metric"><b id="memoryCount">0</b><span>NOTES</span></div>
+</div>
+<label class="hint" for="volumeSlider">Voice Volume (<span id="volVal">100</span>%)</label>
+<input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="1" style="margin-top:6px">
+</section>
+<section class="panel">
+<h2>COMMUNICATION CHANNEL</h2>
+<div id="chat" aria-live="polite"></div>
+<div class="controls">
+<input id="prompt" type="text" autocomplete="off" placeholder="Ask complex questions, search the web, or check weather…" aria-label="Message">
+<button id="send">SEND</button>
+</div>
+<div class="controls">
+<button id="listen" style="flex:1">🎙 SPEAK</button>
+<button id="stop" style="flex:1">■ STOP VOICE</button>
+</div>
+</section>
+<section class="panel">
+<h2>QUICK ACTIONS & TOOLS</h2>
+<div class="quick">
+<button data-action="time">TIME</button>
+<button data-action="weather">WEATHER</button>
+<button data-action="memory">VIEW MEMORY</button>
+<button data-action="google-search">WEB SEARCH</button>
+<button data-action="youtube">YOUTUBE</button>
+<button data-action="maps">MAPS</button>
+</div>
+</section>
+<footer>J.A.R.V.I.S. ULTIMATE • FREE AI UTILITY INTERFACE</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const chat=$('chat');
+const coreNode=$('coreNode');
+
+function add(who,text){
+  const d=document.createElement('div');d.className='msg';
+  const n=document.createElement('span');n.className='who';n.textContent=who;
+  const t=document.createElement('span');t.textContent=text;
+  d.append(n,t);chat.append(d);chat.scrollTop=chat.scrollHeight;
+}
+
+function status(s){
+  $('status').textContent='● '+s.toUpperCase();
+  if(s==='searching'||s==='processing'){coreNode.classList.add('active')}else{coreNode.classList.remove('active')}
+}
+
+function tick(){$('clock').textContent=new Date().toLocaleTimeString()}
+setInterval(tick,1000);tick();
+
+// Volume Slider Control
+$('volumeSlider').oninput = (e) => {
+  const pct = Math.round(e.target.value * 100);
+  $('volVal').textContent = pct;
+};
+
+function getMemories(){
+  try { return JSON.parse(localStorage.getItem('jarvis_memories')||'[]'); } catch(e){ return []; }
+}
+function updateMemoryCount(){
+  $('memoryCount').textContent = getMemories().length;
+}
+updateMemoryCount();
+
+// Advanced Multi-Source Internet Search & Complex Query Handler
+async function advancedSearch(query) {
+  try {
+    // 1. Try Wikipedia first for detailed encyclopedic/complex answers
+    const wikiRes = await fetch(`
